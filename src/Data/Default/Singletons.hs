@@ -13,9 +13,9 @@ or `Some` specific demoted value.
 
 >>> definite (Def :: Opt True)
 True
->>> definite (Some False :: Opt True)
+>>> definite (Some False :: Opt (def :: Bool))
 False
->>> definite (Some True :: Opt True)
+>>> definite (Some True :: Opt False)
 True
 >>> maybe "def" show (perhaps (Def :: Opt True))
 "def"
@@ -161,7 +161,7 @@ True
 -}
 data Opt (def :: k) where
   Def :: SingDef def => Opt (def :: k)
-  Some :: SingDef def => Demote k -> Opt (def :: k)
+  Some :: Demote k -> Opt (def :: k)
 
 {- | Constraint required to `demote` @@def@. -}
 type SingDef (def :: k) = (SingI def, SingKind k)
@@ -188,7 +188,7 @@ deriving instance (SingDef def, Ord (Demote k))
 instance SingDef def
   => Default (Opt (def :: k)) where def = Def
 
-instance (SingDef def, Num (Demote k))
+instance Num (Demote k)
   => Num (Opt (def :: k)) where
     x + y = Some $ definite x + definite y
     x * y = Some $ definite x * definite y
@@ -198,17 +198,17 @@ instance (SingDef def, Num (Demote k))
     negate x = Some $ negate (definite x)
     x - y = Some $ definite x - definite y
 
-instance (SingDef def, Fractional (Demote k))
+instance Fractional (Demote k)
   => Fractional (Opt (def :: k)) where
     recip x = Some $ recip (definite x)
     x / y = Some $ definite x / definite y
     fromRational x = Some $ fromRational x
 
-instance (SingDef def, IsString (Demote k))
+instance IsString (Demote k)
   => IsString (Opt (def :: k)) where
     fromString x = Some $ fromString x
 
-instance (SingDef def, IsList (Demote k))
+instance IsList (Demote k)
   => IsList (Opt (def :: k)) where
     type Item (Opt (def :: k)) = Item (Demote k)
     fromList xs = Some $ fromList xs
