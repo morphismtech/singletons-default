@@ -104,13 +104,15 @@ module Data.Default.Singletons
   , optionally
   , definite
   , perhaps
-  , demote
     -- | Promoted Datakinds
   , Z (..)
   , Neg
   , Q (..)
   , SInteger (..)
   , SRational (..)
+    -- | Reexport Demote
+  , demote
+  , type Demote
   ) where
 
 import Control.Applicative
