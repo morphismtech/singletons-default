@@ -24,7 +24,7 @@ True
 >>> maybe "def" show (perhaps (Some False :: Opt True))
 "False"
 
-Demotable datakinds include:
+Promoted datakinds and their `Demote`d datatypes include:
 
 >>> :kind! Demote Symbol
 Demote Symbol :: *
