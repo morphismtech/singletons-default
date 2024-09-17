@@ -29,9 +29,9 @@ Demotable datakinds include:
 >>> :kind! Demote Symbol
 Demote Symbol :: *
 = Text
->>> :kind! Demote Natural
-Demote Natural :: *
-= Natural
+>>> :kind! Demote Nat
+Demote Nat :: *
+= Nat
 >>> :kind! Demote Char
 Demote Char :: *
 = Char
@@ -71,7 +71,7 @@ which let you use literals to construct `Opt`.
 Some "text"
 >>> "string" :: Opt ['a','b','c']
 Some "string"
->>> [1, 2] :: Opt ('[] :: [Natural])
+>>> [1, 2] :: Opt ('[] :: [Nat])
 Some [1,2]
 >>> Def + 0 :: Opt (Pos 1 :: Z)
 Some 1
@@ -211,7 +211,8 @@ definite = \case
 {- |
 Deconstructs an `Opt` to an `Alternative` `Demote`d value.
 `Def` maps to `empty`,
-and `Some` maps to `pure`.
+and `Some` maps to `pure`,
+inverting `optionally`.
 -}
 perhaps :: Alternative m => Opt (def :: k) -> m (Demote k)
 perhaps = \case
@@ -236,10 +237,10 @@ and `Neg` for constructing nonpositive integer types.
 0
 
 -}
-data Z = Pos Natural | NegOneMinus Natural
+data Z = Pos Nat | NegOneMinus Nat
   deriving (Eq, Ord, Read, Show)
 
-{- | Type family for negating a `Natural`.-}
+{- | Type family for negating a `Nat`.-}
 type family Neg n where
   Neg 0 = Pos 0
   Neg n = NegOneMinus (n - 1)
