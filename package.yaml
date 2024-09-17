@@ -1,0 +1,31 @@
+name:                singletons-default
+version:             0.1.0.0
+github:              "morphismtech/singletons-default"
+license:             BSD-3-Clause
+author:              "Eitan Chatav"
+maintainer:          "eitan.chatav@gmail.com"
+copyright:           "2024 Eitan Chatav"
+synopsis:            An optional type with type level default
+category:            Data
+description:         Please see the README on GitHub at <https://github.com/morphismtech/singletons-default#readme>
+extra-source-files:
+- README.md
+- CHANGELOG.md
+dependencies:
+- base >= 4.7 && < 5
+- data-default
+- singletons
+- singletons-base
+- text
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+library:
+  source-dirs: src
