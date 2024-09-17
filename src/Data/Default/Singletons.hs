@@ -160,8 +160,8 @@ True
 
 -}
 data Opt (def :: k) where
-  Def :: SingDef def => Opt (def :: k)
-  Some :: Demote k -> Opt (def :: k)
+  Def :: forall {k} def. SingDef def => Opt (def :: k)
+  Some :: forall {k} def. Demote k -> Opt (def :: k)
 
 {- | Constraint required to `demote` @@def@. -}
 type SingDef (def :: k) = (SingI def, SingKind k)
@@ -219,8 +219,16 @@ instance IsList (Demote k)
 Constructs an `Opt` from a `Maybe`.
 `Nothing` maps to `Def`,
 and `Just` maps to `Some`.
+
+>>> definite (optionally @'[ '[1,2],'[3]] Nothing)
+[[1,2],[3]]
+>>> definite (optionally @"foo" (Just "bar"))
+"bar"
 -}
-optionally :: SingDef def => Maybe (Demote k) -> Opt (def :: k)
+optionally
+  :: forall {k} def. SingDef def
+  => Maybe (Demote k)
+  -> Opt (def :: k)
 optionally = maybe Def Some
 
 {- |
@@ -228,7 +236,7 @@ Deconstructs an `Opt` to a `Demote`d value.
 `Def` maps to `demote` @@def@,
 and `Some` maps to its argument.
 -}
-definite :: forall k def. Opt (def :: k) -> Demote k
+definite :: forall {k} def. Opt (def :: k) -> Demote k
 definite = \case
   Def -> demote @def
   Some a -> a
@@ -239,7 +247,9 @@ Deconstructs an `Opt` to an `Alternative` `Demote`d value.
 and `Some` maps to `pure`,
 inverting `optionally`.
 -}
-perhaps :: Alternative m => Opt (def :: k) -> m (Demote k)
+perhaps
+  :: forall {k} def m. Alternative m
+  => Opt (def :: k) -> m (Demote k)
 perhaps = \case
   Def -> empty
   Some a -> pure a
