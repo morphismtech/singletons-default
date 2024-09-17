@@ -73,10 +73,10 @@ Some "text"
 Some "string"
 >>> [1, 2] :: Opt ('[] :: [Natural])
 Some [1,2]
->>> -5 :: Opt (Pos 0)
-Some (-5)
->>> 3/4 :: Opt (Neg 7 :% 11 :: Q)
-Some (3 % 4)
+>>> Def + 0 :: Opt (Pos 1 :: Z)
+Some 1
+>>> 3/11 + Def :: Opt (Neg 7 :% 11 :: Q)
+Some ((-4) % 11)
 -}
 
 {-# LANGUAGE
