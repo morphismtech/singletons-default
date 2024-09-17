@@ -129,10 +129,10 @@ or `Some` specific `Demote`d value.
 
 `Opt` is a `Monoid` which yields the leftmost `Some`.
 
->>> mempty :: Opt (Pos 5)
+>>> mempty :: Opt "xyz"
 Def
->>> Def <> (5 + Def) <> 6 :: Opt (Pos 5)
-Some 10
+>>> Def <> "abc" <> "qrs" :: Opt "xyz"
+Some "abc"
 
 -}
 data Opt (def :: k) where
