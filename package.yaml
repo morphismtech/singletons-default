@@ -8,7 +8,7 @@ copyright:           "2024 Eitan Chatav"
 synopsis:            An optional type with type level default
 category:            Data
 description:         Please see the README on GitHub at <https://github.com/morphismtech/singletons-default#readme>
-extra-source-files:
+extra-doc-files:
 - README.md
 - CHANGELOG.md
 dependencies:
