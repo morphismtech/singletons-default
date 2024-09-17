@@ -13,10 +13,9 @@ extra-source-files:
 - CHANGELOG.md
 dependencies:
 - base >= 4.7 && < 5
-- data-default
-- singletons
-- singletons-base
-- text
+- data-default >= 0.7.1 && < 0.8
+- singletons >= 3.0.2 && < 3.1
+- singletons-base >= 3.1.1 && < 3.5
 ghc-options:
 - -Wall
 - -Wcompat
