@@ -8,8 +8,8 @@ Stability   : experimental
 Portability : non-portable (GHC extensions)
 
 This module defines an `Opt`ional type with
-either a `Def`ault value,
-or `Some` specific value.
+either a `Def`ault promoted value,
+or `Some` specific demoted value.
 
 >>> definite (Def :: Opt True)
 True
@@ -23,7 +23,6 @@ True
 "True"
 >>> maybe "def" show (perhaps (Some False :: Opt True))
 "False"
-Just False
 
 Demotable datakinds include:
 
@@ -65,7 +64,7 @@ Demote Q :: *
 The `Opt` type comes with
 `Num`, `Integral`, `Fractional`, and `Real` instances,
 using `definite` values to do arithmetic;
-`IsString` and `IsList` instances,
+and `IsString` and `IsList` instances,
 which let you use literals to construct `Opt`.
 
 >>> "text" :: Opt "hello"
