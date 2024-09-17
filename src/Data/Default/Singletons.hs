@@ -75,8 +75,9 @@ Some "string"
 Some [1,2]
 >>> Def + 0 :: Opt (Pos 1 :: Z)
 Some 1
->>> 3/11 + Def :: Opt (Neg 7 :% 11 :: Q)
-Some ((-4) % 11)
+>>> 0.5 + Def :: Opt (Neg 1 :% 3 :: Q)
+Some (1 % 6)
+
 -}
 
 {-# LANGUAGE
@@ -121,10 +122,17 @@ import Data.String
 import Prelude.Singletons ()
 
 {- |
-`Opt`ional type with either
-a default value `Def`,
-specified at the type level by @def@,
-or a specific value `Some`.
+`Opt`ional type with
+either a `Def`ault promoted value @def@,
+or `Some` specific `Demote`d value.
+
+`Opt` is a `Monoid` which yields the leftmost `Some`.
+
+>>> mempty :: Opt (Pos 5)
+Def
+>>> Def <> (5 + Def) <> 6 :: Opt (Pos 5)
+Some 10
+
 -}
 data Opt (def :: k) where
   Def :: SingDef def => Opt (def :: k)
