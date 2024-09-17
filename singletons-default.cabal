@@ -5,9 +5,9 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           singletons-default
-version:        0.1.0.0
+version:        0.1.0.1
 synopsis:       An optional type with type level default
-description:    Please see the README on GitHub at <https://github.com/morphismtech/singletons-default#readme>
+description:    dependently typed optional values with default
 category:       Data
 homepage:       https://github.com/morphismtech/singletons-default#readme
 bug-reports:    https://github.com/morphismtech/singletons-default/issues

@@ -1,5 +1,5 @@
 name:                singletons-default
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "morphismtech/singletons-default"
 license:             BSD-3-Clause
 author:              "Eitan Chatav"
@@ -7,7 +7,7 @@ maintainer:          "eitan.chatav@gmail.com"
 copyright:           "2024 Eitan Chatav"
 synopsis:            An optional type with type level default
 category:            Data
-description:         Please see the README on GitHub at <https://github.com/morphismtech/singletons-default#readme>
+description:         dependently typed optional values with default
 extra-doc-files:
 - README.md
 - CHANGELOG.md
