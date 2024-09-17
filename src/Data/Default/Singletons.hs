@@ -67,9 +67,9 @@ using `definite` values to do arithmetic;
 and `IsString` and `IsList` instances,
 which let you use literals to construct `Opt`.
 
->>> "text" :: Opt "hello"
+>>> "text" :: Opt ("hello" :: Symbol)
 Some "text"
->>> "string" :: Opt ['a','b','c']
+>>> "string" :: Opt (['a','b','c'] :: String)
 Some "string"
 >>> [1, 2] :: Opt ('[] :: [Natural])
 Some [1,2]
@@ -104,6 +104,7 @@ module Data.Default.Singletons
   , optionally
   , definite
   , perhaps
+  , demote
     -- | Promoted Datakinds
   , Z (..)
   , Neg
@@ -234,6 +235,8 @@ and `Neg` for constructing nonpositive integer types.
 >>> demote @(Neg 5)
 -5
 >>> demote @(Neg 0)
+0
+>>> demote @(Pos 0)
 0
 
 -}
