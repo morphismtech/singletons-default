@@ -134,6 +134,28 @@ Def
 >>> Def <> "abc" <> "qrs" :: Opt "xyz"
 Some "abc"
 
+You can use `Opt` as an optional function argument.
+
+>>> let greet (name :: Opt "Anon") = "Welcome, " <> definite name <> "."
+>>> greet "Sarah"
+"Welcome, Sarah."
+>>> greet Def
+"Welcome, Anon."
+
+Or, you can use `Opt` as an optional field in your record type.
+
+>>> :{
+data Person = Person
+  { name :: Text
+  , age :: Natural
+  , alive :: Opt (True :: Bool)
+  }
+:}
+>>> let isAlive person = definite (alive person)
+>>> let jim = Person {name = "Jim", age = 40, alive = Def}
+>>> isAlive jim
+True
+
 -}
 data Opt (def :: k) where
   Def :: SingDef def => Opt (def :: k)
