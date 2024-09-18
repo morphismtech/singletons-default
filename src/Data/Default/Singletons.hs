@@ -108,6 +108,9 @@ module Data.Default.Singletons
   , Z (..)
   , Neg
   , Q (..)
+  , type (%)
+  , type Reduce
+  , type GCD
   , SInteger (..)
   , SRational (..)
     -- | Reexport Demote
@@ -119,7 +122,7 @@ import Control.Applicative
 import Data.Default
 import GHC.IsList
 import Data.Ratio
-import GHC.TypeNats
+import GHC.TypeLits
 import Data.Singletons
 import Data.String
 import Prelude.Singletons ()
@@ -338,16 +341,53 @@ Datakind `Q`, promoting `Rational`,
 Demote Q :: *
 = Ratio Integer
 
-with `:%` for constructing rational types.
+with `:%` for constructing rational types,
 
 >>> demote @(Pos 7 :% 11)
 7 % 11
->>> demote @(Neg 4 :% 2)
-(-2) % 1
+>>> demote @(Neg 4 :% 6)
+(-2) % 3
 
+and `%` and `Reduce` for constructing reduced rational types.
+
+>>> :kind! Pos 15 % 20
+Pos 15 % 20 :: Q
+= Pos 3 :% 4
+>>> type TwoQuarters = Pos 2 :% 4
+>>> :kind! TwoQuarters
+TwoQuarters :: Q
+= Pos 2 :% 4
+>>> :kind! Reduce TwoQuarters
+Reduce TwoQuarters :: Q
+= Pos 1 :% 2
 -}
 data Q = (:%) Z Natural
   deriving (Eq, Ord, Show, Read)
+
+{- |
+Perform reduction on a rational type.
+-}
+type family Reduce (q :: Q) where
+  Reduce (z :% n) = z % n
+
+{- |
+Construct a rational type in reduced form.
+-}
+type family (%) (z :: Z) (n :: Natural) :: Q where
+  z % 0 = TypeError ('Text "Denominator cannot be zero")
+  Pos 0 % _ = Pos 0 :% 1
+  Pos p % q = Pos (Div p (GCD p q)) :% Div q (GCD p q)
+  NegOneMinus p % q
+    = Neg (Div (1 + p) (GCD (1 + p) q))
+    :% Div q (GCD (1 + p) q)
+
+{- |
+Greatest common divisor of `Natural`s.
+-}
+type family GCD (a :: Natural) (b :: Natural) :: Natural where
+  GCD 0 b = b
+  GCD a 0 = a
+  GCD a b = GCD b (Mod a b)
 
 instance Real Q where
   toRational (x :% y) = fromRational (toInteger x % toInteger y)
