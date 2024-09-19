@@ -104,7 +104,8 @@ type signatures since it's usually inferrable from @def@.
 -}
 
 {-# LANGUAGE
-ConstraintKinds
+AllowAmbiguousTypes
+, ConstraintKinds
 , DataKinds
 , FlexibleContexts
 , FlexibleInstances
@@ -127,6 +128,9 @@ module Data.Default.Singletons
   , optionally
   , definite
   , perhaps
+  , mapOpt1
+  , mapOpt2
+  , apOpt
     -- | Promoted Datakinds
   , Z (..)
   , Neg
@@ -249,6 +253,47 @@ perhaps
 perhaps = \case
   Def -> empty
   Some a -> pure a
+
+{- | Map over an `Opt` using a defunctionalization symbol
+@f :: k@ `~>` @j@ as the first argument with type application @@f@.
+-}
+mapOpt1
+  :: forall {k} {j} f def.
+    ( SingI (f :: k ~> j)
+    , SingKind k
+    , SingDef (f @@ def :: j)
+    )
+  => Opt (def :: k) -- ^ map over this `Opt`
+  -> Opt (f @@ def :: j)
+mapOpt1 = \case
+  Def -> Def
+  Some a -> Some (demote @f a)
+
+{- | Map over two `Opt`s using a defunctionalization symbol
+as the first argument with type application.
+-}
+mapOpt2
+  :: forall {k} {j} {i} f def1 def2.
+    ( SingI (f :: k ~> j ~> i)
+    , SingKind k
+    , SingKind j
+    , SingDef (f @@ def1 @@ def2 :: i)
+    )
+  => Opt (def1 :: k) -- ^ map over this `Opt`
+  -> Opt (def2 :: j) -- ^ and over this `Opt`
+  -> Opt (f @@ def1 @@ def2 :: i)
+mapOpt2 a b = case (a,b) of
+  (Def,Def) -> Def
+  _ -> Some (demote @f (definite a) (definite b))
+
+apOpt
+  :: forall {k} {j} f def. SingDef (f @@ def :: j)
+  => Opt (f :: k ~> j)
+  -> Opt (def :: k)
+  -> Opt (f @@ def :: j)
+apOpt f a = case (f,a) of
+  (Def,Def) -> Def
+  _ -> Some (definite f (definite a))
 
 {- |
 Datakind `Z`, promoting `Integer`,
