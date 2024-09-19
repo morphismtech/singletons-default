@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           singletons-default
-version:        0.1.0.4
+version:        0.1.0.5
 synopsis:       An optional type with type level default
 description:    dependently typed optional values with default
 category:       Data
