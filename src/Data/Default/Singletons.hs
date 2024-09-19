@@ -389,9 +389,10 @@ type family Reduce q :: Q where
 Construct a rational type in reduced form.
 -}
 type family (%) z n :: Q where
-  z % 0 = TypeError ('Text "Denominator cannot be zero")
+  Pos 0 % 0 = Pos 0 :% 0
   Pos 0 % _ = Pos 0 :% 1
   Pos p % q = Pos (Div p (GCD p q)) :% Div q (GCD p q)
+  NegOneMinus _ % 0 = NegOneMinus 0 :% 0
   NegOneMinus p % q
     = Neg (Div (1 + p) (GCD (1 + p) q))
     :% Div q (GCD (1 + p) q)
