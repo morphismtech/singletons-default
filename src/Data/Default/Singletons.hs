@@ -389,7 +389,6 @@ type family Reduce q :: Q where
 Construct a rational type in reduced form.
 -}
 type family (%) z n :: Q where
-  Pos 0 % 0 = Pos 0 :% 0
   Pos p % q = Pos (Div p (GCD p q)) :% Div q (GCD p q)
   NegOneMinus p % q
     = Neg (Div (1 + p) (GCD (1 + p) q))
@@ -399,6 +398,7 @@ type family (%) z n :: Q where
 Construct the greatest common divisor of `Natural` types.
 -}
 type family GCD (a :: Natural) (b :: Natural) :: Natural where
+  GCD 0 0 = 1
   GCD 0 b = b
   GCD a 0 = a
   GCD a b = GCD b (Mod a b)
