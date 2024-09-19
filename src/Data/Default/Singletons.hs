@@ -8,8 +8,8 @@ Stability   : experimental
 Portability : non-portable (GHC extensions)
 
 This module defines an `Opt`ional type with
-either a `Def`ault promoted value,
-or `Some` specific demoted value.
+either a `Def`ault promoted value type,
+or `Some` specific demoted value term.
 
 >>> definite (Def :: Opt True)
 True
@@ -24,34 +24,15 @@ True
 >>> maybe "def" show (perhaps (Some False :: Opt True))
 "False"
 
-Promoted datakinds and their `Demote`d datatypes include:
+The correspondence between promoted datakinds
+and demoted datatypes is inexact.
+Usually, `Demote` @t ~ t@, but not always such as:
 
 >>> :kind! Demote Symbol
 Demote Symbol :: *
 = Text
->>> :kind! Demote Natural
-Demote Natural :: *
-= Natural
->>> :kind! Demote Char
-Demote Char :: *
-= Char
->>> :kind! Demote Bool
-Demote Bool :: *
-= Bool
->>> :kind! Demote [k]
-Demote [k] :: *
-= [Demote k]
->>> :kind! Demote String
-Demote String :: *
-= [Char]
->>> :kind! Demote (Either k j)
-Demote (Either k j) :: *
-= Either (Demote k) (Demote j)
->>> :kind! Demote (k,j)
-Demote (k,j) :: *
-= (Demote k, Demote j)
 
-Because there is no promoted `Integer` and `Rational` datakinds,
+Because there is no promoted `Integer` and `Rational` datakinds in base,
 this module defines them as `Z` and `Q`.
 
 >>> :kind! Demote Z
@@ -63,20 +44,62 @@ Demote Q :: *
 
 The `Opt` type comes with
 `Num`, `Integral`, `Fractional`, and `Real` instances,
-using `definite` values to do arithmetic;
-and `IsString` and `IsList` instances,
-which let you use literals to construct `Opt`.
+using `definite` values to do arithmetic,
+which let you use literals and arithmetic to construct
+`Some` specific `Opt` value;
 
->>> "text" :: Opt ("hello" :: Symbol)
+>>> 4 :: Opt 20
+Some 4
+>>> (Def + 0) * 1 :: Opt (Pos 8 :: Z)
+Some 8
+>>> 0.5 + Def :: Opt (Neg 1 % 3 :: Q)
+Some (1 % 6)
+
+and `IsString` and `IsList` instances.
+
+>>> "text" :: Opt ("abc" :: Symbol)
 Some "text"
 >>> "string" :: Opt (['a','b','c'] :: String)
 Some "string"
->>> [1, 2] :: Opt ('[] :: [Natural])
-Some [1,2]
->>> Def + 0 :: Opt (Pos 1 :: Z)
-Some 1
->>> 0.5 + Def :: Opt (Neg 1 :% 3 :: Q)
-Some (1 % 6)
+>>> [[1, 2],[3,4]] :: Opt ('[] :: [[Natural]])
+Some [[1, 2],[3,4]]
+
+`Opt` is a `Monoid` which yields
+the leftmost specific value when there are `Some`,
+and the `Def`ault value when there are none.
+
+>>> definite (mempty :: Opt "xyz")
+"xyz"
+>>> definite (Def <> "abc" <> "qrs" <> Def :: Opt "xyz")
+"abc"
+
+You can use `Opt` as an optional function argument.
+
+>>> :{
+greet :: Opt "Anon" -> Text
+greet name = "Welcome, " <> definite name <> "."
+:}
+>>> greet "Sarah"
+"Welcome, Sarah."
+>>> greet Def
+"Welcome, Anon."
+
+Or, you can use `Opt` as an optional field in your record type.
+
+>>> :{
+data Person = Person
+  { name :: Text
+  , age :: Natural
+  , alive :: Opt (True :: Bool)
+  }
+:}
+>>> let isAlive person = definite (alive person)
+>>> let jim = Person {name = "Jim", age = 40, alive = Def}
+>>> isAlive jim
+True
+
+You almost never need to include the datakind in your
+type signatures since it's usually inferrable from @def@.
 
 -}
 
@@ -131,36 +154,6 @@ import Prelude.Singletons ()
 `Opt`ional type with
 either a `Def`ault promoted value @def@,
 or `Some` specific `Demote`d value.
-
-`Opt` is a `Monoid` which yields the leftmost `Some`.
-
->>> mempty :: Opt "xyz"
-Def
->>> Def <> "abc" <> "qrs" :: Opt "xyz"
-Some "abc"
-
-You can use `Opt` as an optional function argument.
-
->>> let greet (name :: Opt "Anon") = "Welcome, " <> definite name <> "."
->>> greet "Sarah"
-"Welcome, Sarah."
->>> greet Def
-"Welcome, Anon."
-
-Or, you can use `Opt` as an optional field in your record type.
-
->>> :{
-data Person = Person
-  { name :: Text
-  , age :: Natural
-  , alive :: Opt (True :: Bool)
-  }
-:}
->>> let isAlive person = definite (alive person)
->>> let jim = Person {name = "Jim", age = 40, alive = Def}
->>> isAlive jim
-True
-
 -}
 data Opt (def :: k) where
   Def :: forall {k} def. SingDef def => Opt (def :: k)
@@ -276,11 +269,29 @@ and `Neg` for constructing nonpositive integer types.
 >>> demote @(Pos 0)
 0
 
+Non`Neg`ative integer types are matched cardinally by `Pos`,
+
+>>> :kind! Pos 9
+Pos 9 :: Z
+= Pos 9
+>>> :kind! Neg 0
+Neg 0 :: Z
+= Pos 0
+
+and `Neg`ative integer types are matched ordinally by `NegOneMinus`.
+
+>>> :kind! Neg 6
+Neg 6 :: Z
+= NegOneMinus 5
+>>> :kind! Neg 1
+Neg 1 :: Z
+= NegOneMinus 0
+
 -}
 data Z = Pos Natural | NegOneMinus Natural
   deriving (Eq, Ord, Read, Show)
 
-{- | Type family for negating a `Natural`.-}
+{- | `Neg`ate a `Natural` type . -}
 type family Neg n where
   Neg 0 = Pos 0
   Neg n = NegOneMinus (n - 1)
@@ -341,39 +352,43 @@ Datakind `Q`, promoting `Rational`,
 Demote Q :: *
 = Ratio Integer
 
-with `:%` for constructing rational types,
+with `:%` for constructing (unreduced) and matching rational types,
 
 >>> demote @(Pos 7 :% 11)
 7 % 11
 >>> demote @(Neg 4 :% 6)
 (-2) % 3
+>>> :kind Pos 10 :% 10
+Pos 10 :% 10 :: Q
 
 and `%` and `Reduce` for constructing reduced rational types.
 
->>> :kind! Pos 15 % 20
-Pos 15 % 20 :: Q
-= Pos 3 :% 4
->>> type TwoQuarters = Pos 2 :% 4
->>> :kind! TwoQuarters
-TwoQuarters :: Q
-= Pos 2 :% 4
->>> :kind! Reduce TwoQuarters
-Reduce TwoQuarters :: Q
-= Pos 1 :% 2
+>>> :kind! Pos 14 % 49
+Pos 14 % 49 :: Q
+= Pos 2 :% 7
+>>> type Percent n = Pos n :% 100
+>>> :kind! Percent 10
+Percent 10 :: Q
+= Pos 10 :% 100
+>>> :kind! Reduce (Percent 10)
+Reduce (Percent 10) :: Q
+= Pos 1 :% 10
 -}
 data Q = (:%) Z Natural
   deriving (Eq, Ord, Show, Read)
 
 {- |
-Perform reduction on a rational type.
+Perform reduction on a rational type, idempotently.
+
+prop> Reduce (Reduce q) ~ Reduce q
 -}
-type family Reduce (q :: Q) where
+type family Reduce q :: Q where
   Reduce (z :% n) = z % n
 
 {- |
 Construct a rational type in reduced form.
 -}
-type family (%) (z :: Z) (n :: Natural) :: Q where
+type family (%) z n :: Q where
   z % 0 = TypeError ('Text "Denominator cannot be zero")
   Pos 0 % _ = Pos 0 :% 1
   Pos p % q = Pos (Div p (GCD p q)) :% Div q (GCD p q)
@@ -382,7 +397,7 @@ type family (%) (z :: Z) (n :: Natural) :: Q where
     :% Div q (GCD (1 + p) q)
 
 {- |
-Greatest common divisor of `Natural`s.
+Construct the greatest common divisor of `Natural` types.
 -}
 type family GCD (a :: Natural) (b :: Natural) :: Natural where
   GCD 0 b = b
