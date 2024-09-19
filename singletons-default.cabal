@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           singletons-default
-version:        0.1.0.5
+version:        0.1.0.6
 synopsis:       An optional type with type level default
 description:    dependently typed optional values with default
 category:       Data
@@ -37,7 +37,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , data-default >=0.7.1 && <0.8
+    , data-default-class >=0.1.2.0 && <1
     , singletons >=3.0.2 && <3.1
     , singletons-base >=3.1.1 && <3.5
   default-language: Haskell2010

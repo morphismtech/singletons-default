@@ -142,7 +142,7 @@ module Data.Default.Singletons
   ) where
 
 import Control.Applicative
-import Data.Default
+import Data.Default.Class
 import GHC.IsList
 import Data.Ratio
 import GHC.TypeLits
