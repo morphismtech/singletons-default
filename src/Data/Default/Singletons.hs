@@ -149,43 +149,44 @@ import GHC.TypeLits
 import Data.Singletons
 import Data.String
 import Prelude.Singletons ()
+import Data.Convertible
 
 {- |
 `Opt`ional type with
 either a `Def`ault promoted value @def@,
 or `Some` specific `Demote`d value.
 -}
-data Opt (def :: k) where
-  Def :: forall {k} def. SingDef def => Opt (def :: k)
-  Some :: forall {k} def. Demote k -> Opt (def :: k)
+data Opt (def :: k) a where
+  Def :: forall {k} def a. SingDef def a => Opt (def :: k) a
+  Some :: forall {k} def a. a -> Opt (def :: k) a
 
 {- | Constraint required to `demote` @@def@. -}
-type SingDef (def :: k) = (SingI def, SingKind k)
+type SingDef (def :: k) a = (SingI def, SingKind k, Convertible (Demote k) a)
 
-instance Semigroup (Opt (def :: k)) where
+instance Semigroup (Opt (def :: k) a) where
   Def <> opt = opt
   Some x <> _ = Some x
 
-instance SingDef def => Monoid (Opt def) where
+instance SingDef def a => Monoid (Opt def a) where
   mempty = Def
 
-deriving instance (SingDef def, Show (Demote k))
-  => Show (Opt (def :: k))
+deriving instance (SingDef def a, Show a)
+  => Show (Opt (def :: k) a)
 
-deriving instance (SingDef def, Read (Demote k))
-  => Read (Opt (def :: k))
+deriving instance (SingDef def a, Read a)
+  => Read (Opt (def :: k) a)
 
-deriving instance (SingDef def, Eq (Demote k))
-  => Eq (Opt (def :: k))
+deriving instance (SingDef def a, Eq a)
+  => Eq (Opt (def :: k) a)
 
-deriving instance (SingDef def, Ord (Demote k))
-  => Ord (Opt (def :: k))
+deriving instance (SingDef def a, Ord a)
+  => Ord (Opt (def :: k) a)
 
-instance SingDef def
-  => Default (Opt (def :: k)) where def = Def
+instance SingDef def a
+  => Default (Opt (def :: k) a) where def = Def
 
-instance Num (Demote k)
-  => Num (Opt (def :: k)) where
+instance Num a
+  => Num (Opt (def :: k) a) where
     x + y = Some $ definite x + definite y
     x * y = Some $ definite x * definite y
     abs x = Some $ abs (definite x)
@@ -194,19 +195,19 @@ instance Num (Demote k)
     negate x = Some $ negate (definite x)
     x - y = Some $ definite x - definite y
 
-instance Fractional (Demote k)
-  => Fractional (Opt (def :: k)) where
+instance Fractional a
+  => Fractional (Opt (def :: k) a) where
     recip x = Some $ recip (definite x)
     x / y = Some $ definite x / definite y
     fromRational x = Some $ fromRational x
 
-instance IsString (Demote k)
-  => IsString (Opt (def :: k)) where
+instance IsString a
+  => IsString (Opt (def :: k) a) where
     fromString x = Some $ fromString x
 
-instance IsList (Demote k)
-  => IsList (Opt (def :: k)) where
-    type Item (Opt (def :: k)) = Item (Demote k)
+instance IsList a
+  => IsList (Opt (def :: k) a) where
+    type Item (Opt (def :: k) a) = Item a
     fromList xs = Some $ fromList xs
     fromListN n xs = Some $ fromListN n xs
     toList x = toList $ definite x
@@ -222,9 +223,9 @@ and `Just` maps to `Some`.
 "bar"
 -}
 optionally
-  :: forall {k} def. SingDef def
-  => Maybe (Demote k)
-  -> Opt (def :: k)
+  :: forall {k} def a. SingDef def a
+  => Maybe a
+  -> Opt (def :: k) a
 optionally = maybe Def Some
 
 {- |
@@ -232,9 +233,9 @@ Deconstructs an `Opt` to a `Demote`d value.
 `Def` maps to `demote` @@def@,
 and `Some` maps to its argument.
 -}
-definite :: forall {k} def. Opt (def :: k) -> Demote k
+definite :: forall {k} def a. Opt (def :: k) a -> a
 definite = \case
-  Def -> demote @def
+  Def -> convert $ demote @def
   Some a -> a
 
 {- |
@@ -244,8 +245,8 @@ and `Some` maps to `pure`,
 inverting `optionally`.
 -}
 perhaps
-  :: forall {k} def m. Alternative m
-  => Opt (def :: k) -> m (Demote k)
+  :: forall {k} def a m. Alternative m
+  => Opt (def :: k) a -> m a
 perhaps = \case
   Def -> empty
   Some a -> pure a
